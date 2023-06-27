@@ -9,6 +9,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private Animator characterAnimator;
 
+    [SerializeField]
+    private Transform targetObject;
+
     // Update is called once per frame
     void Update()
     {
@@ -23,4 +26,18 @@ public class PlayerMovement : MonoBehaviour
             characterAnimator.SetBool("isCharacterWalking", false);
         }
     }
+
+    // IK
+
+    private void OnAnimatorIK(int layerIndex)
+    {
+        characterAnimator.SetLookAtWeight(1);
+        characterAnimator.SetLookAtPosition(targetObject.position);
+
+        characterAnimator.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1);
+        characterAnimator.SetIKPosition(AvatarIKGoal.LeftHand, targetObject.position);
+    }
+
+    // END IK
+
 }
