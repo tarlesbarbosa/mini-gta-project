@@ -19,25 +19,44 @@ public class PlayerMovement : MonoBehaviour
 
     private Transform rootTargetObject;
 
+    private bool hangingMoveTrigger;
+
     void Start() {
         rootTargetObject = null;
+        hangingMoveTrigger = true;
     }
 
     void FixedUpdate() {
         if(!rootTargetObject)
             return;
 
-        transform.position = rootTargetObject.position;
+        if(isCharacterHanging && hangingMoveTrigger) {
+            transform.position = rootTargetObject.position;
+            hangingMoveTrigger = false;
+        }
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        float move = (Input.GetAxis("Vertical") * movementSpeed) * Time.deltaTime;
-        float rotation = (Input.GetAxis("Horizontal") * rotationSpeed) * Time.deltaTime;
+        float move = Input.GetAxis("Vertical");
+        float rotation = Input.GetAxis("Horizontal") * rotationSpeed;
 
-        if(!isCharacterDead){
+        if(!isCharacterDead && !isCharacterHanging){
+            rotation *= Time.deltaTime;
             transform.Rotate(0, rotation, 0);
+        }
+
+        if(isCharacterHanging){
+            if(rotation > 1){
+                characterAnimator.SetBool("isCharHangingRight", true);
+            } else if(rotation < -1){
+                characterAnimator.SetBool("isCharHangingLeft", true);
+            } else{
+                characterAnimator.SetBool("isCharHangingRight", false);
+                characterAnimator.SetBool("isCharHangingLeft", false);
+            }
         }
         
         if(move != 0){
