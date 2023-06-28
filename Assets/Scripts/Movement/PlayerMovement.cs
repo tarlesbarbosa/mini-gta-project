@@ -73,6 +73,11 @@ public class PlayerMovement : MonoBehaviour
         if(!isCharacterDead && Input.GetKeyDown(KeyCode.Space)){
             characterAnimator.SetTrigger("CharacterJump");
         }
+
+        // Climbing over wall
+        if(isCharacterHanging && Input.GetKeyDown(KeyCode.Z)){
+            StartCoroutine("ClimbingOverWall");
+        }
     }
 
     void OnTriggerEnter(Collider col)
@@ -94,7 +99,14 @@ public class PlayerMovement : MonoBehaviour
         
     }
 
-
+    IEnumerator ClimbingOverWall(){
+        characterAnimator.SetTrigger("CharacterClimbOver");
+        yield return new WaitForSeconds(3.7f);
+        GetComponent<Rigidbody>().isKinematic = false;
+        isCharacterHanging = false;
+        hangingMoveTrigger = true;
+        
+    }
     // IK
 
     // private void OnAnimatorIK(int layerIndex)
