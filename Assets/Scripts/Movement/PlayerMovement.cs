@@ -15,6 +15,21 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private bool isCharacterDead = false;
 
+    private bool isCharacterHanging = false;
+
+    private Transform rootTargetObject;
+
+    void Start() {
+        rootTargetObject = null;
+    }
+
+    void FixedUpdate() {
+        if(!rootTargetObject)
+            return;
+
+        transform.position = rootTargetObject.position;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -31,9 +46,13 @@ public class PlayerMovement : MonoBehaviour
             characterAnimator.SetBool("isCharacterWalking", false);
         }
 
-        if(isCharacterDead && Input.GetKeyDown(KeyCode.Space)){
+        if(isCharacterDead && Input.GetKeyDown(KeyCode.Z)){
             characterAnimator.SetTrigger("CharacterRevive");
             isCharacterDead = false;
+        }
+
+        if(!isCharacterDead && Input.GetKeyDown(KeyCode.Space)){
+            characterAnimator.SetTrigger("CharacterJump");
         }
     }
 
@@ -44,6 +63,19 @@ public class PlayerMovement : MonoBehaviour
             isCharacterDead = true;
         }
     }
+
+    public void hangingMechanic(Transform rootTarget){
+        if(isCharacterHanging)
+            return;
+        
+        characterAnimator.SetTrigger("CharacterHanging");
+        GetComponent<Rigidbody>().isKinematic = true;
+        isCharacterHanging = true;
+        rootTargetObject = rootTarget;
+        
+    }
+
+
     // IK
 
     // private void OnAnimatorIK(int layerIndex)
