@@ -21,9 +21,17 @@ public class PlayerMovement : MonoBehaviour
 
     private bool hangingMoveTrigger;
 
+    public Transform climbingWall;
+
     void Start() {
         rootTargetObject = null;
         hangingMoveTrigger = true;
+    }
+
+    void adjustCharacterRotation(){
+        if(Vector3.Distance(transform.position, climbingWall.position) <= 3.1f){
+            transform.rotation = Quaternion.Lerp(transform.rotation, climbingWall.rotation, 1);
+        }
     }
 
     void FixedUpdate() {
@@ -31,7 +39,7 @@ public class PlayerMovement : MonoBehaviour
             return;
 
         if(isCharacterHanging && hangingMoveTrigger) {
-            transform.position = rootTargetObject.position;
+            transform.position = new Vector3(transform.position.x, rootTargetObject.position.y, rootTargetObject.position.z);
             hangingMoveTrigger = false;
         }
 
@@ -71,6 +79,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if(!isCharacterDead && Input.GetKeyDown(KeyCode.Space)){
+            adjustCharacterRotation();
             characterAnimator.SetTrigger("CharacterJump");
         }
 
