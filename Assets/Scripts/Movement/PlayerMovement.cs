@@ -15,14 +15,56 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private bool isCharacterDead = false;
 
+    private bool isCharacterHanging = false;
+
+    private Transform rootTargetObject;
+
+    private bool hangingMoveTrigger;
+
+    public Transform climbingWall;
+
+    void Start() {
+        rootTargetObject = null;
+        hangingMoveTrigger = true;
+    }
+
+    void adjustCharacterRotation(){
+        if(Vector3.Distance(transform.position, climbingWall.position) <= 3.1f){
+            transform.rotation = Quaternion.Lerp(transform.rotation, climbingWall.rotation, 1);
+        }
+    }
+
+    void FixedUpdate() {
+        if(!rootTargetObject)
+            return;
+
+        if(isCharacterHanging && hangingMoveTrigger) {
+            transform.position = new Vector3(transform.position.x, rootTargetObject.position.y, rootTargetObject.position.z);
+            hangingMoveTrigger = false;
+        }
+
+    }
+
     // Update is called once per frame
     void Update()
     {
-        float move = (Input.GetAxis("Vertical") * movementSpeed) * Time.deltaTime;
-        float rotation = (Input.GetAxis("Horizontal") * rotationSpeed) * Time.deltaTime;
+        float move = Input.GetAxis("Vertical");
+        float rotation = Input.GetAxis("Horizontal") * rotationSpeed;
 
-        if(!isCharacterDead){
+        if(!isCharacterDead && !isCharacterHanging){
+            rotation *= Time.deltaTime;
             transform.Rotate(0, rotation, 0);
+        }
+
+        if(isCharacterHanging){
+            if(rotation > 1){
+                characterAnimator.SetBool("isCharHangingRight", true);
+            } else if(rotation < -1){
+                characterAnimator.SetBool("isCharHangingLeft", true);
+            } else{
+                characterAnimator.SetBool("isCharHangingRight", false);
+                characterAnimator.SetBool("isCharHangingLeft", false);
+            }
         }
         
         if(move != 0){
@@ -31,9 +73,19 @@ public class PlayerMovement : MonoBehaviour
             characterAnimator.SetBool("isCharacterWalking", false);
         }
 
-        if(isCharacterDead && Input.GetKeyDown(KeyCode.Space)){
+        if(isCharacterDead && Input.GetKeyDown(KeyCode.Z)){
             characterAnimator.SetTrigger("CharacterRevive");
             isCharacterDead = false;
+        }
+
+        if(!isCharacterDead && Input.GetKeyDown(KeyCode.Space)){
+            adjustCharacterRotation();
+            characterAnimator.SetTrigger("CharacterJump");
+        }
+
+        // Climbing over wall
+        if(isCharacterHanging && Input.GetKeyDown(KeyCode.Z)){
+            StartCoroutine("ClimbingOverWall");
         }
     }
 
@@ -43,6 +95,26 @@ public class PlayerMovement : MonoBehaviour
             characterAnimator.SetTrigger("CharacterDeath");
             isCharacterDead = true;
         }
+    }
+
+    public void hangingMechanic(Transform rootTarget){
+        if(isCharacterHanging)
+            return;
+        
+        characterAnimator.SetTrigger("CharacterHanging");
+        GetComponent<Rigidbody>().isKinematic = true;
+        isCharacterHanging = true;
+        rootTargetObject = rootTarget;
+        
+    }
+
+    IEnumerator ClimbingOverWall(){
+        characterAnimator.SetTrigger("CharacterClimbOver");
+        yield return new WaitForSeconds(3.7f);
+        GetComponent<Rigidbody>().isKinematic = false;
+        isCharacterHanging = false;
+        hangingMoveTrigger = true;
+        
     }
     // IK
 
