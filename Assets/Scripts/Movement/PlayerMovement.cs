@@ -34,6 +34,8 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    //comment 1
+
     void FixedUpdate() {
         if(!rootTargetObject)
             return;
